@@ -42,7 +42,7 @@
     | 4L| STOR M(4000) | 将和值送入C（I） |
     | 4R| LOAD M(0) | 读入计数变量N |
     | 5L| SUB M(1) | N自减1 |
-    | 5R| JUMP+ M(6,20:39) | 如果N非负，跳转6R |
+    | 5R| JUMP +M(6,20:39) | 如果N非负，跳转6R |
     | 6L| JUMP M(6,0:19) | 终止程序 |
     | 6R| STOR M(0) | 更新N |
     | 7L| ADD M(1) | 累加器（AC）自增1 |
@@ -60,6 +60,36 @@
     | 操作码 | 操作数 |
     | :---: | :---: |
     | 00000001 | 000000000010 |
-    > 首先, 
+    > 首先, CPU必须进入存储器中取得指令。指令包含我们将要装载的数据的地址。然后，CPU再次进入存储器去装载位于该地址的数据的值。在整个执行阶段，共需访问两次存储器。
+
+1. 在IAS机上，需要通过将什么放入MAR、MBR、地址总线、数据总线和控制总线，CPU才能完成由存储器读取一个值或向存储器写一个值？请用英语描述此过程。
+    > To read a value from memory, the CPU puts the address of the value it wants into the MAR. The CPU then asserts the Read control line to memory and place the address on the address bus. Memory places the contents of the memory location passed on the data bus. This data is then transferred to the MBR. To write a value to memory, the CPU puts the address of the value it wants to write into the MAR. The CPU also places the data it wants to write into the MBR. The CPU then asserts the Write control line to memory and palce the address on the address bus and the data on the data bus. Memory transfers the data on the data bus into the corresponding memory location.
+
+    > 要从存储器上读取一个值，CPU要将该值的地址置入存储器地址寄存器（MAR），然后CPU使存储器读控制线有效（assert）并将地址放置在地址总线上，存储器将存储器上相应位置的内容放置在数据总线上，继而数据被被传送给存储器缓冲寄存器（MBR）。要向存储器写入一个值，CPU要将该值的地址置入存储器地址寄存器（MAR），同时CPU将计划写入的数据置入存储器缓冲寄存器，然后CPU使存储器写控制线有效（assert）并将地址放置在地址总线上，响应数据放置在数据总线上，存储器从数据总线接收数据并写入相应的存储空间。
+
+1. 给出IAS机的存储内容如下,试写出从地址08A开始的该程序的汇编语言代码，并说明这段程序做什么。
+    | 地址 | 内容 |
+    |:-:|:-:|
+    | 08A | 010FA210FB |
+    | 08B | 010FA0F08D |
+    | 08C | 020FA210FB |
+    > 这段程序将求出位于存储器0FA位置的值的绝对值，将其存储于0FB。
+    
+    | 地址 | 内容 |
+    |:-:|:-:|
+    | 08AL | LOAD M(0FA) |
+    | 08AR | STOR M(0FA) |
+    | 08BL | LOAD M(0FA) |
+    | 08BR | JUMP +M(08D) |
+    | 08CL | LOAD -M(0FA) |
+    | 08CR | STOR M(0FB) |
+    | 08D | - |
+
+1. 指出图2-3中每条数据路径（例如，AC和ALU之间）的位宽度。
+    > 所有通向/来自MBR的数据路径位宽40 bits；所有通向/来自MAR的数据路径位宽12 bits；通向/来自AC的路径位宽40 bits；通向/来自MQ的路径位宽40 bits.
+
+1. 在IBM 360的Model 65和Model 75中，地址在两个分开的主存储器中交错排放（例如，所有的奇数序号字存放在一个存储器中，而所有的偶数字存放在另一个存储器中），采用这一技术的目的是什么？
+    > 目的是为了提升性能。当地址呈递给存储器模块时，在读或写操作生效之前会有一定的时延。当上一块存储器模块产生时延时，可以切换至下一地址，指向另一块存储器模块。对于一系列的连续字请求，当存储器模块为奇偶搭配时速率最大。
 
 # 未完待续
+    
